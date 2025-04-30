@@ -2,6 +2,6 @@
 
 set -x https_proxy "<proxy if needed>"
 set -x DISCORD_TOKEN "<discord token>"
-set -x GEMINI_API_KEY "<gemini token>"
+set -x GEMINI_TOKEN "<gemini token>"
 
-uv run main.py
+uv run -m src.main

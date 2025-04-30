@@ -954,6 +954,7 @@ dependencies = [
     { name = "discord-py" },
     { name = "google-genai" },
     { name = "httpx", extra = ["socks"] },
+    { name = "pydantic" },
 ]
 
 [package.dev-dependencies]
@@ -969,6 +970,7 @@ requires-dist = [
     { name = "discord-py", specifier = ">=2.5.2" },
     { name = "google-genai", specifier = ">=1.12.1" },
     { name = "httpx", extras = ["socks"], specifier = ">=0.28.1" },
+    { name = "pydantic", specifier = ">=2.11.3" },
 ]
 
 [package.metadata.requires-dev]
