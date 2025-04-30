@@ -2,7 +2,14 @@ from typing import Optional
 from io import BytesIO
 
 from google.genai import Client
-from google.genai.types import File, UploadFileConfig, Part, Content
+from google.genai.types import (
+    File,
+    UploadFileConfig,
+    Part,
+    Content,
+    GenerateContentConfig,
+)
+
 from discord import Message, User
 
 from .history import ChatHistory, Entry
@@ -37,12 +44,11 @@ class GeminiService:
     ) -> str:
         chat = self._gemini.aio.chats.create(
             model=self._model,
-            history=[
-                Content(role="user", parts=[Part.from_text(text=self._prompt)])
-            ]
-            + self._chat_history.history(channel_id),
+            history=self._chat_history.history(channel_id),
         )
-        response = await chat.send_message(msg)
+        response = await chat.send_message(
+            msg, GenerateContentConfig(system_instruction=self._prompt)
+        )
         return response.text
 
     async def _record_message(
