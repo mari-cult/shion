@@ -12,6 +12,7 @@ class Settings(BaseModel):
 
     GEMINI_TOKEN: str
     GEMINI_MODEL: str = "gemini-2.0-flash"
+    GEMINI_PROMPT: str
 
 
 def parse_settings() -> Settings:

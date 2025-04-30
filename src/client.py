@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from discord import Client, Message, Intents
 
@@ -20,14 +21,26 @@ class Shion(Client):
     Gemini API
     """
 
-    def __init__(self, *, intents: Intents, **options):
-        super().__init__(intents=intents, **options)
+    def __init__(self):
         self._settings = parse_settings()
+
+        intents = Intents.default()
+        intents.message_content = True
+        options: dict[str, Any] = dict()
+        if self._settings.https_proxy:
+            options["proxy"] = self._settings.https_proxy
+        print(options)
+        super().__init__(intents=intents, **options)
+
         self._gemini = GeminiService(
             self._settings.GEMINI_TOKEN,
             self._settings.GEMINI_MODEL,
+            self._settings.GEMINI_PROMPT,
             self._settings.DISCORD_HISTORY_MAX_LEN,
         )
+
+    def run(self):
+        super().run(self._settings.DISCORD_TOKEN)
 
     async def on_ready(self):
         """Logs when the bot is ready and connected to Discord."""
@@ -57,5 +70,6 @@ class Shion(Client):
         except Exception as e:
             logger.error(e, stack_info=True, exc_info=True)
             await message.channel.send(
-                "Oops! Something went wrong just now... ( ᵔ ⩊ ᵔ )"
+                "Oops! Something went wrong just now... ( ᵔ ⩊ ᵔ )\n"
+                f"```\n{e}\n```"
             )

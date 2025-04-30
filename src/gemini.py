@@ -26,8 +26,9 @@ def assemble_message(
 
 
 class GeminiService:
-    def __init__(self, token: str, model: str, chat_max_len: int):
+    def __init__(self, token: str, model: str, prompt: str, chat_max_len: int):
         self._model = model
+        self._prompt = prompt
         self._gemini = Client(api_key=token)
         self._chat_history = ChatHistory(chat_max_len)
 
@@ -35,7 +36,11 @@ class GeminiService:
         self, channel_id: int, msg: list[Part]
     ) -> str:
         chat = self._gemini.aio.chats.create(
-            model=self._model, history=self._chat_history.history(channel_id)
+            model=self._model,
+            history=[
+                Content(role="user", parts=[Part.from_text(text=self._prompt)])
+            ]
+            + self._chat_history.history(channel_id),
         )
         response = await chat.send_message(msg)
         return response.text
