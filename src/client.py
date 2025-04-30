@@ -1,7 +1,8 @@
 import logging
+from io import StringIO
 from typing import Any
 
-from discord import Client, Message, Intents
+from discord import Client, Message, Intents, MessageType, File
 
 from .settings import parse_settings
 from .gemini import GeminiService
@@ -48,11 +49,11 @@ class Shion(Client):
         print("Bot is ready!")
 
     async def on_message(self, message: Message):
-        # Ignore messages from the bot itself
-        if message.author == self.user:
+        if message.type not in [MessageType.default, MessageType.reply]:
             return
 
-        if self.user not in message.mentions:
+        # Ignore messages from the bot itself
+        if message.author == self.user:
             return
 
         print(
@@ -60,12 +61,20 @@ class Shion(Client):
             f" {message.content}"
         )
 
+        if self.user not in message.mentions:
+            self._gemini.push_message(message)
+            return
+
         try:
             async with message.channel.typing():
-                answer = await self._gemini.process_message(self.user, message)
+                answer = await self._gemini.send_message(self.user, message)
 
                 # Send the generated response back to the channel
-                await message.channel.send(answer)
+                if len(answer) < 2000:
+                    await message.channel.send(answer)
+                else:
+                    file = File(StringIO(answer), filename="message.txt")
+                    await message.channel.send(file=file)
 
         except Exception as e:
             logger.error(e, stack_info=True, exc_info=True)

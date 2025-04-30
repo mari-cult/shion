@@ -61,7 +61,9 @@ class GeminiService:
             for file in trimmed.files:
                 await self._gemini.aio.files.delete(name=file.name)
 
-    async def process_message(self, user: User, msg: Message) -> str:
+    async def _process_message(
+        self, msg: Message
+    ) -> tuple[list[Part], list[File]]:
         files: list[File] = list()
         for attachment in msg.attachments:
             data = await attachment.read()
@@ -75,12 +77,21 @@ class GeminiService:
                 ),
             )
             files.append(file)
-
-        user_parts = assemble_message(
+        parts = assemble_message(
             msg.author.id, msg.author.display_name, msg.content, files
         )
+        return parts, files
+
+    async def push_message(self, msg: Message):
+        parts, files = await self._process_message(msg)
+        await self._record_message(msg.channel.id, "user", parts, files)
+
+    async def send_message(self, user: User, msg: Message) -> str:
+        user_parts, user_files = await self._process_message(msg)
         answer = await self._generate_response(msg.channel.id, user_parts)
         model_parts = assemble_message(user.id, user.display_name, answer, [])
-        await self._record_message(msg.channel.id, "user", user_parts, files)
+        await self._record_message(
+            msg.channel.id, "user", user_parts, user_files
+        )
         await self._record_message(msg.channel.id, "model", model_parts, [])
         return answer

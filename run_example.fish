@@ -5,6 +5,8 @@ set -x https_proxy "<proxy if needed>"
 
 # token for your discord bot
 set -x DISCORD_TOKEN "<discord token>"
+# how much messages your bot remembers
+set -x DISCORD_HISTORY_MAX_LEN 500
 
 # gemini api key
 set -x GEMINI_TOKEN "<gemini token>"
